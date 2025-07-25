@@ -1,4 +1,4 @@
-use std::{io::stdin};
+use std::io::stdin;
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 enum Segment {
@@ -30,7 +30,10 @@ impl Segment {
 }
 
 fn tokenize_string(string: String) -> Vec<Segment> {
-    let mut string_vec: Vec<char> = string.chars().filter(|c| c.is_ascii_digit() || "+-*/^()".contains(*c)).collect();
+    let mut string_vec: Vec<char> = string
+        .chars()
+        .filter(|c| c.is_ascii_digit() || "+-*/^().".contains(*c))
+        .collect();
     string_vec.push(' ');
     let mut output_vec: Vec<Segment> = Vec::new();
     let mut skip_iterations: u16 = 0;
@@ -40,13 +43,12 @@ fn tokenize_string(string: String) -> Vec<Segment> {
             skip_iterations = skip_iterations - 1;
             continue;
         } else if c.is_ascii_digit() {
-            
             let mut num_string: String = String::new();
             if i > 0 {
                 if i == 1 && string_vec[0] == '-' {
                     num_string.push('-');
                     output_vec.pop();
-                } else if string_vec[i-1] == '-' && !string_vec[i-2].is_ascii_digit() {
+                } else if string_vec[i - 1] == '-' && !string_vec[i - 2].is_ascii_digit() {
                     num_string.push('-');
                     output_vec.pop();
                 }
@@ -89,8 +91,7 @@ fn tokenize_string(string: String) -> Vec<Segment> {
     if output_vec.is_empty() {
         output_vec.push(Segment::None);
     }
-
-    return output_vec
+    return output_vec;
 }
 
 fn prec_of_last(op_stack: &Vec<Segment>) -> u8 {
@@ -103,19 +104,19 @@ fn exec_from_stacks(num_stack: &mut Vec<f64>, op_stack: &mut Vec<Segment>) -> f6
     let op: Segment = op_stack.pop().unwrap_or(Segment::None);
 
     if op == Segment::None {
-        return 0.0
+        return 0.0;
     } else if op == Segment::Add {
-        return num1 + num2
+        return num1 + num2;
     } else if op == Segment::Subtract {
-        return num1 - num2
+        return num1 - num2;
     } else if op == Segment::Multiply {
-        return num1 * num2
+        return num1 * num2;
     } else if op == Segment::Divide {
-        return num1 / num2
+        return num1 / num2;
     } else if op == Segment::Exp {
-        return num1.powf(num2)
+        return num1.powf(num2);
     } else {
-        return 0.0
+        return 0.0;
     }
 }
 
@@ -144,7 +145,7 @@ fn calc_from_tokens(tokens: Vec<Segment>) -> Result<f64, String> {
             op_stack.push(*t);
         }
     }
-    
+
     if num_stack.len() == 1 {
         return Ok(num_stack[0]);
     } else if num_stack.len() != op_stack.len() + 1 {
@@ -161,11 +162,13 @@ fn calc_from_tokens(tokens: Vec<Segment>) -> Result<f64, String> {
 fn main() {
     let mut input: String = String::new();
     println!("Enter your expression:");
-    stdin().read_line(&mut input).expect("Input could not be read.");
+    stdin()
+        .read_line(&mut input)
+        .expect("Input could not be read.");
     let tokens: Vec<Segment> = tokenize_string(input.trim().to_string());
     let result = calc_from_tokens(tokens);
     match result {
-        Ok(n) => println!("Result: {:?}", n),
+        Ok(n) => println!("Result: {:.2}", n),
         Err(msg) => println!("{}", msg),
     }
 }
