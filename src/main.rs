@@ -37,11 +37,10 @@ fn tokenize_string(string: String) -> Vec<Segment> {
 
     for (i, c) in string_vec.iter().enumerate() {
         if skip_iterations != 0 {
-            println!("skip: {:?}", skip_iterations);
             skip_iterations = skip_iterations - 1;
             continue;
         } else if c.is_ascii_digit() {
-            println!("char: {:?}", c);
+            
             let mut num_string: String = String::new();
             if i > 0 {
                 if i == 1 && string_vec[0] == '-' {
@@ -53,55 +52,44 @@ fn tokenize_string(string: String) -> Vec<Segment> {
                 }
             }
             for (i2, c2) in string_vec[i..].iter().enumerate() {
-                println!("char2: {:?}", c2);
                 if c2.is_ascii_digit() || *c2 == '.' {
                     num_string.push(*c2)
                 } else {
                     skip_iterations = skip_iterations + (i2 as u16 - 1);
-                    println!("num string: {:?}", num_string);
                     output_vec.push(Segment::Number(num_string.parse::<f64>().unwrap()));
                     break;
                 }
             }
         } else if *c == '+' {
-            println!("char: {:?}", c);
             output_vec.push(Segment::Add);
             continue;
         } else if *c == '-' {
-            println!("char: {:?}", c);
             output_vec.push(Segment::Subtract);
             continue;
         } else if *c == '*' {
-            println!("char: {:?}", c);
             output_vec.push(Segment::Multiply);
             continue;
         } else if *c == '/' {
-            println!("char: {:?}", c);
             output_vec.push(Segment::Divide);
             continue;
         } else if *c == '(' {
-            println!("char: {:?}", c);
             output_vec.push(Segment::LParen);
             continue;
         } else if *c == ')' {
-            println!("char: {:?}", c);
             output_vec.push(Segment::RParen);
             continue;
         } else if *c == '^' {
-            println!("char: {:?}", c);
             output_vec.push(Segment::Exp);
             continue;
         } else {
-            println!("char: {:?}", c);
             continue;
         }
     }
 
     if output_vec.is_empty() {
-        println!("op vec empty");
         output_vec.push(Segment::None);
     }
-    println!("Tokens: {:?}", output_vec);
+
     return output_vec
 }
 
@@ -110,14 +98,9 @@ fn prec_of_last(op_stack: &Vec<Segment>) -> u8 {
 }
 
 fn exec_from_stacks(num_stack: &mut Vec<f64>, op_stack: &mut Vec<Segment>) -> f64 {
-
-    println!("Executing on stacks:\n{:?}\n{:?}", num_stack, op_stack);
-
     let num2: f64 = num_stack.pop().unwrap_or(0.0);
     let num1: f64 = num_stack.pop().unwrap_or(0.0);
-    println!("Num stack change: {:?}", num_stack);
     let op: Segment = op_stack.pop().unwrap_or(Segment::None);
-    println!("Op stack change: {:?}", op_stack);
 
     if op == Segment::None {
         return 0.0
@@ -143,25 +126,20 @@ fn calc_from_tokens(tokens: Vec<Segment>) -> Result<f64, String> {
         // Push value to stack
         if let Segment::Number(n) = t {
             num_stack.push(*n);
-            println!("Num stack change: {:?}", num_stack);
         } else if t == &Segment::None {
             return Err("No tokens were given to calculate from!".to_string());
         } else if t == &Segment::RParen {
             while prec_of_last(&op_stack) != 0 {
                 let result: f64 = exec_from_stacks(&mut num_stack, &mut op_stack);
                 num_stack.push(result);
-                println!("Num stack change: {:?}", num_stack);
             }
             op_stack.pop();
-            println!("Op stack change: {:?}", op_stack);
         } else if t.op_precedence() >= prec_of_last(&op_stack) || t == &Segment::LParen {
             op_stack.push(*t);
-            println!("Op stack change: {:?}", op_stack);
         } else {
             while !(t.op_precedence() >= prec_of_last(&op_stack)) {
                 let result: f64 = exec_from_stacks(&mut num_stack, &mut op_stack);
                 num_stack.push(result);
-                println!("Num stack change: {:?}", num_stack);
             }
             op_stack.push(*t);
         }
@@ -175,7 +153,6 @@ fn calc_from_tokens(tokens: Vec<Segment>) -> Result<f64, String> {
         while num_stack.len() != 1 {
             let result: f64 = exec_from_stacks(&mut num_stack, &mut op_stack);
             num_stack.push(result);
-            println!("Num stack change: {:?}", num_stack);
         }
         return Ok(num_stack[0]);
     }
